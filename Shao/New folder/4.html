@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ปล่อยเช่าอุปกรณ์</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f1ec;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #5d4e37;
+      margin-bottom: 30px;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      color: #5d4e37;
+      font-weight: 600;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 2px solid #e8dcc6;
+      border-radius: 10px;
+      background-color: #faf8f4;
+      font-size: 16px;
+    }
+
+    input[type="file"] {
+      padding: 6px;
+    }
+
+    button[type="submit"] {
+      background-color: #689f38;
+      color: #fff;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #558b2f;
+    }
+
+    .preview-item {
+      display: inline-block;
+      position: relative;
+      margin: 10px 10px 0 0;
+    }
+
+    .preview-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #d32f2f;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #imagePreview {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>ปล่อยเช่าอุปกรณ์</h2>
+
+  <form id="rentalForm">
+    <label>ชื่ออุปกรณ์:
+      <input type="text" id="deviceName" required />
+    </label>
+
+    <label>หมวดหมู่:
+      <select id="category" required>
+        <option value="">-- เลือกหมวดหมู่ --</option>
+        <option value="iPad">iPad</option>
+        <option value="Notebook">Notebook</option>
+        <option value="Power bank">Power bank</option>
+        <option value="สายชาร์จ">สายชาร์จ</option>
+      </select>
+    </label>
+
+    <label>ราคา/วัน:
+      <input type="number" id="pricePerDay" required />
+    </label>
+
+    <label>รายละเอียด:
+      <textarea id="description" required></textarea>
+    </label>
+
+    <label>สถานที่:
+      <input type="text" id="location" required />
+    </label>
+
+    <label>ชื่อผู้ให้เช่า:
+      <input type="text" id="ownerName" required />
+    </label>
+
+    <label>Email:
+      <input type="email" id="email" required />
+    </label>
+
+    <label>อัปโหลดรูป (สูงสุด 5 รูป):
+      <input type="file" id="photoInput" accept="image/*" multiple />
+    </label>
+
+    <div id="imagePreview"></div>
+
+    <button type="submit">บันทึกประกาศ</button>
+  </form>
+
+  <script>
+    let selectedImages = [];
+
+    document.getElementById('photoInput').addEventListener('change', function (e) {
+      const files = Array.from(e.target.files);
+      const previewContainer = document.getElementById('imagePreview');
+
+      files.forEach((file) => {
+        if (selectedImages.length >= 5) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const imgData = ev.target.result;
+          selectedImages.push(imgData);
+
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+          div.innerHTML = `
+            <img src="${imgData}" />
+            <button type="button" class="remove-btn">&times;</button>
+          `;
+
+          div.querySelector('.remove-btn').addEventListener('click', () => {
+            selectedImages = selectedImages.filter((src) => src !== imgData);
+            div.remove();
+          });
+
+          previewContainer.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Clear input after processing
+      e.target.value = '';
+    });
+
+    document.getElementById('rentalForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const newItem = {
+        id: Date.now(),
+        deviceName: document.getElementById('deviceName').value.trim(),
+        category: document.getElementById('category').value,
+        pricePerDay: document.getElementById('pricePerDay').value,
+        description: document.getElementById('description').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        ownerName: document.getElementById('ownerName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        images: selectedImages
+      };
+
+      const rentals = JSON.parse(localStorage.getItem('rentals') || '[]');
+      rentals.push(newItem);
+      localStorage.setItem('rentals', JSON.stringify(rentals));
+
+      alert("บันทึกสำเร็จ!");
+      window.location.href = "p1.html";
+    });
+  </script>
+
+</body>
+</html>
